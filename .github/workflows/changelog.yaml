@@ -20,11 +20,13 @@ jobs:
           git config user.email "ci@neuxdotdev.my.id"
 
       - run: |
-          git log > changelog
+          git fetch --all
+          git reset --hard origin/master
+          git log --pretty=format:"%h %ad %s" --date=short > changelog
 
       - run: |
           git add changelog
-          git commit -m "Update changelog [$(date +'%Y-%m-%d %H:%M:%S')]"
-          git push origin master
+          git commit -m "Update changelog [$(date +'%Y-%m-%d %H:%M:%S')]" || echo "No changes to commit"
+          git push origin master --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
