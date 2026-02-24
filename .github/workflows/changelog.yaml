@@ -14,6 +14,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - run: |
           git config user.name "CI Bot"
@@ -22,11 +24,11 @@ jobs:
       - run: |
           git fetch --all
           git reset --hard origin/master
-          git log --pretty=format:"%h %ad %s" --date=short > changelog
+          git log --pretty=format:"%h %ad %an %s" --date=short > changelog
 
       - run: |
           git add changelog
-          git commit -m "Update changelog [$(date +'%Y-%m-%d %H:%M:%S')]" || echo "No changes to commit"
+          git diff --cached --quiet || git commit -m "Update changelog [$(date +'%Y-%m-%d %H:%M:%S')]"
           git push origin master --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
