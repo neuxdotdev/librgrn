@@ -5,27 +5,27 @@ on:
     branches:
       - master
 
+permissions:
+  contents: write
+
 jobs:
   update-changelog:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Git
-        run: |
+      - run: |
           git config user.name "CI Bot"
           git config user.email "ci@neuxdotdev.my.id"
 
-      - name: Generate changelog
-        run: |
-          git log > changelog
+      - run: |
+          git log --pretty=format:"%h %ad %s" --date=short > changelog
 
-      - name: Commit changes
-        run: |
+      - run: |
+          git pull --rebase origin master || echo "Nothing to pull"
           git add changelog
-          git commit -m "Update changelog [$(date +'%Y-%m-%d %H:%M:%S')]" || echo "No changes to commit"
-          git push
+          git diff --cached --quiet || git commit -m "Update changelog [$(date +'%Y-%m-%d %H:%M:%S')]"
+          git push origin master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
