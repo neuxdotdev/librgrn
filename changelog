@@ -1,3 +1,15 @@
+commit 9c067b9bdd64cf68551ecb4047601e8a1e118538
+Author: neuxdotdev <neuxdev1@gmail.com>
+Date:   Tue Feb 24 23:53:16 2026 +0700
+
+    docs(link): fixed link
+
+commit d98e75f7ff948440e4efda31299fd8575eea37e9
+Author: neuxdotdev <neuxdev1@gmail.com>
+Date:   Tue Feb 24 23:51:56 2026 +0700
+
+    docs: add changelog
+
 commit 2c00c95cb7da0b22abdfde086cf44c4bc32d83cc
 Author: neuxdotdev <neuxdev1@gmail.com>
 Date:   Tue Feb 24 23:51:40 2026 +0700
