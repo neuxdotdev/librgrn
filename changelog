@@ -36,3 +36,5 @@
 * [c09ed8d] 2026-02-24 | CI Bot | Update changelog [2026-02-24 23:35:07]
 * [7c5f356] 2026-02-25 | neuxdotdev | chore: rename project to libgrnd
 * [40fae69] 2026-02-25 | neuxdotdev | Merge branch 'master' of https://github.com/neuxdotdev/libgrnd
+* [644e49b] 2026-02-24 | CI Bot | Update changelog [2026-02-24 23:37:24]
+* [bb30a64] 2026-02-25 | neuxdotdev | feat: initialize librgrn with TypeScript, add core modules and error handling
