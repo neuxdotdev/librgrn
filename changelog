@@ -34,7 +34,10 @@
 * [309ed1e] 2026-02-25 | neuxdotdev | chore: remove deprecated files and clean up project structure before migration to javascripts
 * [0302ef8] 2026-02-25 | neuxdotdev | Merge branch 'master' of https://github.com/neuxdotdev/grnpy
 * [c09ed8d] 2026-02-24 | CI Bot | Update changelog [2026-02-24 23:35:07]
+* [56ef19f] 2026-02-24 | dependabot[bot] | chore(deps): bump actions/checkout from 4 to 6
 * [7c5f356] 2026-02-25 | neuxdotdev | chore: rename project to libgrnd
 * [40fae69] 2026-02-25 | neuxdotdev | Merge branch 'master' of https://github.com/neuxdotdev/libgrnd
 * [644e49b] 2026-02-24 | CI Bot | Update changelog [2026-02-24 23:37:24]
 * [bb30a64] 2026-02-25 | neuxdotdev | feat: initialize librgrn with TypeScript, add core modules and error handling
+* [8bf4c25] 2026-02-25 | CI Bot | Update changelog [2026-02-25 00:12:01]
+* [ffc9e28] 2026-02-25 | neuxdotdev | chore(deps): bump actions/checkout from 4 to 6 (#1)
