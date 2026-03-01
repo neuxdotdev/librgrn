@@ -1,40 +1,61 @@
 {
-  "name": "librgrn",
-  "version": "1.0.0",
-  "description": "implementation of generate-random.org into pure python libraryResources",
-  "keywords": [
-    "generate",
-    "random",
-    "generate-random",
-    "binding",
-    "libary",
-    "cryptography"
-  ],
-  "homepage": "https://github.com/neuxdotdev/libgrnd#readme",
-  "bugs": {
-    "url": "https://github.com/neuxdotdev/libgrnd/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/neuxdotdev/libgrnd.git"
-  },
-  "license": "AGPL-3.0",
-  "author": "neuxdotdev",
-  "type": "module",
-  "main": "dist/lib.js",
-  "scripts": {
-    "test": "node dist/lib.js",
-    "fmt": "npx prettier --write .",
-    "prepare": "husky"
-  },
-  "devDependencies": {
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.3.0",
-    "husky": "^9.1.7",
-    "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
-  },
-  "dependencies": {
-    "jsonwebtoken": "^9.0.3"
-  }
+	"name": "librgrn",
+	"version": "1.0.0",
+	"description": "Pure Node.js cryptographic random & security utilities",
+	"keywords": [
+		"random",
+		"cryptography",
+		"security",
+		"jwt",
+		"crypto",
+		"token"
+	],
+	"homepage": "https://github.com/neuxdotdev/libgrnd#readme",
+	"bugs": {
+		"url": "https://github.com/neuxdotdev/libgrnd/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/neuxdotdev/libgrnd.git"
+	},
+	"license": "AGPL-3.0",
+	"author": "neuxdotdev",
+	"type": "module",
+	"main": "./dist/lib.js",
+	"types": "./dist/types.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/types.d.ts",
+			"import": "./dist/lib.js"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"clean": "rm -rf dist",
+		"typecheck": "tsc --noEmit",
+		"build:ts": "tsc",
+		"build:types": "dts-bundle-generator -o dist/types.d.ts dist/lib.d.ts",
+		"build": "npm run clean && npm run build:ts && npm run build:types",
+		"dev": "tsc --watch",
+		"fmt": "prettier --write .",
+		"lint": "tsc --noEmit",
+		"test": "node dist/lib.js",
+		"prepare": "husky install"
+	},
+	"dependencies": {
+		"jsonwebtoken": "^9.0.3"
+	},
+	"devDependencies": {
+		"@types/jsonwebtoken": "^9.0.10",
+		"@types/node": "^25.3.0",
+		"dts-bundle-generator": "^9.5.1",
+		"husky": "^9.1.7",
+		"prettier": "^3.8.1",
+		"typescript": "^5.9.3"
+	},
+	"engines": {
+		"node": ">=18"
+	}
 }
