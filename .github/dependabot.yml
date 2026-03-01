@@ -1,71 +1,71 @@
 version: 2
 updates:
-  - package-ecosystem: "cargo"
-    directory: "/"
+  - package-ecosystem: 'cargo'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:00"
+      interval: 'weekly'
+      day: 'monday'
+      time: '04:00'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 10
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
     ignore:
-      - dependency-name: "regex"
-        versions: ["1.8.0"]
+      - dependency-name: 'regex'
+        versions: ['1.8.0']
 
-  - package-ecosystem: "cargo"
-    directory: "/crates/core"
+  - package-ecosystem: 'cargo'
+    directory: '/crates/core'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 5
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
 
-  - package-ecosystem: "cargo"
-    directory: "/crates/api"
+  - package-ecosystem: 'cargo'
+    directory: '/crates/api'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 5
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
 
-  - package-ecosystem: "cargo"
-    directory: "/crates/cli"
+  - package-ecosystem: 'cargo'
+    directory: '/crates/cli'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 5
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
 
-  - package-ecosystem: "cargo"
-    directory: "/crates/wasm"
+  - package-ecosystem: 'cargo'
+    directory: '/crates/wasm'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 5
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
     open-pull-requests-limit: 5
-    rebase-strategy: "auto"
+    rebase-strategy: 'auto'

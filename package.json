@@ -23,10 +23,18 @@
   "type": "module",
   "main": "dist/lib.js",
   "scripts": {
-    "test": "node dist/lib.js"
+    "test": "node dist/lib.js",
+    "fmt": "npx prettier --write .",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.3.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.8.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^9.0.3"
   }
 }
