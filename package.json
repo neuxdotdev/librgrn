@@ -42,7 +42,10 @@
 		"fmt": "prettier --write .",
 		"lint": "tsc --noEmit",
 		"test": "node dist/lib.js",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"format": "prettier . --write",
+		"format:check": "prettier . --check",
+		"clean-code": "rmcm -l js -i -c 0 -r src --verbose && npm run fmt"
 	},
 	"dependencies": {
 		"jsonwebtoken": "^9.0.3"
@@ -51,6 +54,7 @@
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^25.3.0",
 		"dts-bundle-generator": "^9.5.1",
+		"esbuild": "^0.27.3",
 		"husky": "^9.1.7",
 		"prettier": "^3.8.1",
 		"typescript": "^5.9.3"

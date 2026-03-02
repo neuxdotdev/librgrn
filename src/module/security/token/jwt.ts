@@ -2,11 +2,9 @@ import jwt, { SignOptions, VerifyOptions, Algorithm } from 'jsonwebtoken'
 import { randomInt, randomUUID } from 'crypto'
 import { ValidationError, CryptoError } from './../../../error.js'
 import type { StringValue } from 'ms'
-
 export type HmacAlgorithm = 'HS256' | 'HS384' | 'HS512'
 export type RsaAlgorithm = 'RS256' | 'RS384' | 'RS512'
 export type JwtAlgorithm = HmacAlgorithm | RsaAlgorithm
-
 export interface JwtSignConfig {
 	algorithm: JwtAlgorithm
 	key: string | Buffer
@@ -16,7 +14,6 @@ export interface JwtSignConfig {
 	expiresIn?: number | StringValue
 	notBefore?: number | StringValue
 }
-
 export interface JwtVerifyConfig {
 	algorithm: JwtAlgorithm
 	key: string | Buffer
@@ -27,12 +24,10 @@ export interface JwtVerifyConfig {
 	requireIssuer?: boolean
 	requireAudience?: boolean
 }
-
 export interface JwtPayloadOptions {
 	includeRoles?: boolean
 	includeScope?: boolean
 }
-
 export interface JwtGenerateOptions {
 	count?: number
 	algorithm?: JwtAlgorithm
@@ -43,12 +38,10 @@ export interface JwtGenerateOptions {
 	audience?: string
 	key: string | Buffer
 }
-
 export interface JwtGeneratedToken {
 	token: string
 	payload: Record<string, any>
 }
-
 export interface JwtGenerateResult {
 	tokens: JwtGeneratedToken[]
 	metadata: {
@@ -59,7 +52,6 @@ export interface JwtGenerateResult {
 		includeScope: boolean
 	}
 }
-
 interface JwtPayloadBase {
 	jti: string
 	sub: string
@@ -67,22 +59,18 @@ interface JwtPayloadBase {
 	scope?: string
 	iat?: number
 }
-
 interface DecodedJwtClaims {
 	iss?: string
 	aud?: string | string[]
 	[key: string]: unknown
 }
-
 const SUPPORTED_ALGORITHMS: JwtAlgorithm[] = ['HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512']
 const DEFAULT_CLOCK_TOLERANCE = 5
-
 function assertAlgorithm(alg: string): asserts alg is JwtAlgorithm {
 	if (!SUPPORTED_ALGORITHMS.includes(alg as JwtAlgorithm)) {
 		throw new ValidationError(`Unsupported algorithm: ${alg}`, { alg })
 	}
 }
-
 function validateKeyForAlgorithm(
 	algorithm: JwtAlgorithm,
 	key: unknown,
@@ -111,7 +99,6 @@ function validateKeyForAlgorithm(
 		}
 	}
 }
-
 function buildSignOptions(config: JwtSignConfig): SignOptions {
 	const options: SignOptions = {
 		algorithm: config.algorithm as Algorithm,
@@ -123,7 +110,6 @@ function buildSignOptions(config: JwtSignConfig): SignOptions {
 	if (config.notBefore !== undefined) options.notBefore = config.notBefore
 	return options
 }
-
 function buildVerifyOptions(config: JwtVerifyConfig): VerifyOptions {
 	const options: VerifyOptions = {
 		algorithms: [config.algorithm as Algorithm],
@@ -132,14 +118,11 @@ function buildVerifyOptions(config: JwtVerifyConfig): VerifyOptions {
 	if (config.issuer !== undefined) options.issuer = config.issuer
 	if (config.audience !== undefined) options.audience = config.audience
 	if (config.maxAge !== undefined) options.maxAge = config.maxAge
-
 	return options
 }
-
 function enforceStrictClaims(decoded: DecodedJwtClaims, config: JwtVerifyConfig): void {
 	const requireIssuer = config.requireIssuer !== false
 	const requireAudience = config.requireAudience !== false
-
 	if (requireIssuer) {
 		if (!decoded.iss || decoded.iss !== config.issuer) {
 			throw new CryptoError('Missing or mismatched issuer', {
@@ -148,11 +131,9 @@ function enforceStrictClaims(decoded: DecodedJwtClaims, config: JwtVerifyConfig)
 			})
 		}
 	}
-
 	if (requireAudience) {
 		const actualAud = decoded.aud
 		const expectedAud = config.audience
-
 		if (
 			!actualAud ||
 			(Array.isArray(actualAud)
@@ -166,7 +147,6 @@ function enforceStrictClaims(decoded: DecodedJwtClaims, config: JwtVerifyConfig)
 		}
 	}
 }
-
 function shuffle<T>(array: T[]): T[] {
 	const result = [...array]
 	for (let i = result.length - 1; i > 0; i--) {
@@ -175,11 +155,9 @@ function shuffle<T>(array: T[]): T[] {
 	}
 	return result
 }
-
 export function signJwt<T extends object = any>(payload: T, config: JwtSignConfig): string {
 	assertAlgorithm(config.algorithm)
 	validateKeyForAlgorithm(config.algorithm, config.key, 'sign')
-
 	const options = buildSignOptions(config)
 	try {
 		return jwt.sign(payload, config.key, options)
@@ -187,7 +165,6 @@ export function signJwt<T extends object = any>(payload: T, config: JwtSignConfi
 		throw new CryptoError('JWT signing failed', { algorithm: config.algorithm }, err)
 	}
 }
-
 export function verifyJwt<T extends object = any>(
 	token: string,
 	config: JwtVerifyConfig,
@@ -195,7 +172,6 @@ export function verifyJwt<T extends object = any>(
 ): T {
 	assertAlgorithm(config.algorithm)
 	validateKeyForAlgorithm(config.algorithm, config.key, 'verify')
-
 	const options = buildVerifyOptions(config)
 	let decoded: unknown
 	try {
@@ -203,24 +179,18 @@ export function verifyJwt<T extends object = any>(
 	} catch (err: any) {
 		throw new CryptoError('JWT verification failed', { algorithm: config.algorithm }, err)
 	}
-
 	if (typeof decoded !== 'object' || decoded === null) {
 		throw new CryptoError('Invalid JWT payload: not an object')
 	}
-
 	enforceStrictClaims(decoded as Record<string, unknown>, config)
-
 	if (validate) {
 		return validate(decoded)
 	}
-
 	return decoded as T
 }
-
 export function decodeJwt<T = any>(token: string): T | null {
 	return jwt.decode(token) as T | null
 }
-
 export function generateJwtPayload(
 	options: JwtPayloadOptions = {},
 ): JwtPayloadBase & Record<string, any> {
@@ -228,37 +198,30 @@ export function generateJwtPayload(
 		jti: randomUUID(),
 		sub: `user_${randomInt(1000, 9999)}`,
 	}
-
 	if (options.includeRoles) {
 		const rolesPool = ['admin', 'user', 'editor', 'viewer']
 		const count = randomInt(1, 4)
 		const shuffled = shuffle(rolesPool)
 		payload.roles = shuffled.slice(0, count)
 	}
-
 	if (options.includeScope) {
 		const scopesPool = ['read', 'write', 'delete', 'update']
 		const count = randomInt(1, 4)
 		const shuffled = shuffle(scopesPool)
 		payload.scope = shuffled.slice(0, count).join(' ')
 	}
-
 	return payload
 }
-
 function resolveGenerateOptions(options: JwtGenerateOptions): Required<JwtGenerateOptions> {
 	if (!options?.key) {
 		throw new ValidationError('Key is required for token generation')
 	}
-
 	const count = options.count ?? 1
 	if (count < 1 || count > 100) {
 		throw new ValidationError('count must be between 1 and 100', { count })
 	}
-
 	const algorithm = options.algorithm ?? 'HS256'
 	assertAlgorithm(algorithm)
-
 	return {
 		key: options.key,
 		count,
@@ -270,15 +233,12 @@ function resolveGenerateOptions(options: JwtGenerateOptions): Required<JwtGenera
 		audience: options.audience ?? '',
 	}
 }
-
 function generateSingleToken(config: Required<JwtGenerateOptions>, now: number): JwtGeneratedToken {
 	const payload = generateJwtPayload({
 		includeRoles: config.includeRoles,
 		includeScope: config.includeScope,
 	})
-
 	payload.iat = now
-
 	const token = signJwt(payload, {
 		algorithm: config.algorithm,
 		key: config.key,
@@ -286,20 +246,15 @@ function generateSingleToken(config: Required<JwtGenerateOptions>, now: number):
 		audience: config.audience,
 		expiresIn: config.expiresIn,
 	})
-
 	return { token, payload }
 }
-
 function getUnixTimestamp(): number {
 	return Math.floor(Date.now() / 1000)
 }
-
 export function generateJwtTokens(options: JwtGenerateOptions): JwtGenerateResult {
 	const config = resolveGenerateOptions(options)
-
 	const now = getUnixTimestamp()
 	const tokens = Array.from({ length: config.count }, () => generateSingleToken(config, now))
-
 	return {
 		tokens,
 		metadata: {
@@ -311,20 +266,16 @@ export function generateJwtTokens(options: JwtGenerateOptions): JwtGenerateResul
 		},
 	}
 }
-
 export function exportJwtTokens(
 	result: JwtGenerateResult,
 	format: 'json' | 'csv' | 'txt' = 'json',
 ): string {
 	const { tokens, metadata } = result
-
 	switch (format) {
 		case 'json':
 			return JSON.stringify({ metadata, tokens }, null, 2)
-
 		case 'txt':
 			return tokens.map((t) => t.token).join('\n')
-
 		case 'csv': {
 			const header = 'token,payload\n'
 			const rows = tokens
@@ -335,7 +286,6 @@ export function exportJwtTokens(
 				.join('\n')
 			return header + rows
 		}
-
 		default:
 			throw new ValidationError('Unsupported export format', { format })
 	}

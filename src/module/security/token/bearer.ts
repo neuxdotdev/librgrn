@@ -1,75 +1,87 @@
 import { randomBytes } from 'crypto'
 import { ValidationError } from '../../../error.js'
 export type BearerFormat = 'base64url' | 'base64' | 'hex' | 'alphanumeric'
+export type BearerLength = 16 | 32 | 64 | 128
 export interface BearerGenerateOptions {
 	count?: number
-	length?: 16 | 32 | 64 | 128
-
+	length?: BearerLength
 	format?: BearerFormat
 }
 export interface BearerGeneratedToken {
 	token: string
-	byteLength: number
+	byteLength: BearerLength
 	format: BearerFormat
 }
 export interface BearerGenerateResult {
 	tokens: BearerGeneratedToken[]
 	metadata: {
 		count: number
-		length: number
+		length: BearerLength
 		format: BearerFormat
 	}
 }
+const VALID_LENGTHS: BearerLength[] = [16, 32, 64, 128]
+const MAX_COUNT = 50
+const MIN_COUNT = 1
 const BASE32_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 function base32Encode(buffer: Buffer): string {
 	let bits = 0
 	let value = 0
 	let output = ''
 	for (let i = 0; i < buffer.length; i++) {
-		const byte = buffer[i]
-		if (byte === undefined) throw new Error('Unexpected undefined byte in buffer')
+		const byte = buffer[i]!
 		value = (value << 8) | byte
 		bits += 8
 		while (bits >= 5) {
-			output += BASE32_ALPHABET[(value >>> (bits - 5)) & 31]
+			const index = (value >>> (bits - 5)) & 31
+			output += BASE32_ALPHABET[index]
 			bits -= 5
 		}
 	}
 	if (bits > 0) {
-		output += BASE32_ALPHABET[(value << (5 - bits)) & 31]
+		const index = (value << (5 - bits)) & 31
+		output += BASE32_ALPHABET[index]
 	}
 	return output
 }
+function validateGenerateOptions(options: BearerGenerateOptions): Required<BearerGenerateOptions> {
+	const count = options.count ?? 1
+	if (count < MIN_COUNT || count > MAX_COUNT) {
+		throw new ValidationError(`count must be between ${MIN_COUNT} and ${MAX_COUNT}`, { count })
+	}
+	const length = options.length ?? 32
+	if (!VALID_LENGTHS.includes(length)) {
+		throw new ValidationError(`length must be one of: ${VALID_LENGTHS.join(', ')}`, { length })
+	}
+	const format = options.format ?? 'base64url'
+	return { count, length, format }
+}
+function generateSingleToken(length: BearerLength, format: BearerFormat): BearerGeneratedToken {
+	const bytes = randomBytes(length)
+	let token: string
+	switch (format) {
+		case 'base64url':
+			token = bytes.toString('base64url')
+			break
+		case 'base64':
+			token = bytes.toString('base64').replace(/=+$/, '')
+			break
+		case 'hex':
+			token = bytes.toString('hex')
+			break
+		case 'alphanumeric':
+			token = base32Encode(bytes)
+			break
+		default:
+			throw new ValidationError(`Unsupported format: ${format}`)
+	}
+	return { token, byteLength: length, format }
+}
 export function generateBearerTokens(options: BearerGenerateOptions = {}): BearerGenerateResult {
-	const { count = 1, length = 32, format = 'base64url' } = options
-	if (count < 1 || count > 50) {
-		throw new ValidationError('count must be between 1 and 50', { count })
-	}
-	const validLengths = [16, 32, 64, 128] as const
-	if (!validLengths.includes(length as any)) {
-		throw new ValidationError('length must be 16, 32, 64, or 128', { length })
-	}
+	const { count, length, format } = validateGenerateOptions(options)
 	const tokens: BearerGeneratedToken[] = []
 	for (let i = 0; i < count; i++) {
-		const bytes = randomBytes(length)
-		let token: string
-		switch (format) {
-			case 'base64url':
-				token = bytes.toString('base64url')
-				break
-			case 'base64':
-				token = bytes.toString('base64').replace(/=+$/, '')
-				break
-			case 'hex':
-				token = bytes.toString('hex')
-				break
-			case 'alphanumeric':
-				token = base32Encode(bytes)
-				break
-			default:
-				throw new ValidationError(`Unsupported format: ${format}`)
-		}
-		tokens.push({ token, byteLength: length, format })
+		tokens.push(generateSingleToken(length, format))
 	}
 	return {
 		tokens,
@@ -95,7 +107,6 @@ export function exportBearerTokens(
 			throw new ValidationError('Unsupported export format', { format })
 	}
 }
-
 export function generateBearerTokenSample(): BearerGeneratedToken {
 	const result = generateBearerTokens({
 		count: 1,

@@ -5,11 +5,13 @@
 	"useTabs": true,
 	"semi": false,
 	"singleQuote": true,
-	"quoteProps": "as-needed",
+	"jsxSingleQuote": false,
+	"quoteProps": "consistent",
 	"trailingComma": "all",
 	"arrowParens": "always",
 	"bracketSpacing": true,
 	"bracketSameLine": false,
 	"endOfLine": "lf",
-	"embeddedLanguageFormatting": "auto"
+	"embeddedLanguageFormatting": "auto",
+	"proseWrap": "preserve"
 }
