@@ -21,45 +21,58 @@
 	"license": "AGPL-3.0",
 	"author": "neuxdotdev",
 	"type": "module",
-	"main": "./dist/lib.js",
-	"types": "./dist/types.d.ts",
+	"main": "./build/lib.cjs",
+	"module": "./build/lib.js",
+	"types": "./build/lib.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/types.d.ts",
-			"import": "./dist/lib.js"
+			"types": "./build/lib.d.ts",
+			"import": "./build/lib.js",
+			"require": "./build/lib.cjs"
 		}
 	},
 	"files": [
-		"dist"
+		"build"
 	],
+	"sideEffects": false,
+	"engines": {
+		"node": ">=24"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
-		"clean": "rm -rf dist",
+		"clean": "rm -rf {dist,build}",
 		"typecheck": "tsc --noEmit",
 		"build:ts": "tsc",
-		"build:types": "dts-bundle-generator -o dist/types.d.ts dist/lib.d.ts",
-		"build": "npm run clean && npm run build:ts && npm run build:types",
+		"build:types": "dts-bundle-generator -o dist/lib.d.ts dist/lib.d.ts",
+		"build:bundle": "rollup -c",
+		"build": "npm run clean && npm run typecheck && npm run build:ts && npm run build:bundle",
 		"dev": "tsc --watch",
-		"fmt": "prettier --write .",
 		"lint": "tsc --noEmit",
-		"test": "node dist/lib.js",
-		"prepare": "husky install",
 		"format": "prettier . --write",
 		"format:check": "prettier . --check",
-		"clean-code": "rmcm -l js -i -c 0 -r src --verbose && npm run fmt"
+		"clean-code": "rmcm -l js -i -c 0 -r ./src --verbose && npm run format",
+		"rebuild": "npm run clean && npm run clean-code && npm run build",
+		"test": "node --test",
+		"prepublishOnly": "npm run build",
+		"prepare": "husky install"
 	},
 	"dependencies": {
 		"jsonwebtoken": "^9.0.3"
 	},
 	"devDependencies": {
+		"@rollup/plugin-commonjs": "^29.0.0",
+		"@rollup/plugin-node-resolve": "^16.0.3",
+		"@rollup/plugin-typescript": "^12.3.0",
 		"@types/jsonwebtoken": "^9.0.10",
 		"@types/node": "^25.3.0",
 		"dts-bundle-generator": "^9.5.1",
 		"esbuild": "^0.27.3",
 		"husky": "^9.1.7",
 		"prettier": "^3.8.1",
+		"rollup": "^4.59.0",
+		"rollup-plugin-dts": "^6.3.0",
 		"typescript": "^5.9.3"
-	},
-	"engines": {
-		"node": ">=18"
 	}
 }
