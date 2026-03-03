@@ -2,9 +2,9 @@ import jwt, { SignOptions, VerifyOptions, Algorithm } from 'jsonwebtoken'
 import { randomInt, randomUUID } from 'crypto'
 import { ValidationError, CryptoError } from './../../../error.js'
 import type { StringValue } from 'ms'
-export type HmacAlgorithm = 'HS256' | 'HS384' | 'HS512'
-export type RsaAlgorithm = 'RS256' | 'RS384' | 'RS512'
-export type JwtAlgorithm = HmacAlgorithm | RsaAlgorithm
+export type JwtHmacAlgorithm = 'HS256' | 'HS384' | 'HS512'
+export type JwtRsaAlgorithm = 'RS256' | 'RS384' | 'RS512'
+export type JwtAlgorithm = JwtHmacAlgorithm | JwtRsaAlgorithm
 export interface JwtSignConfig {
 	algorithm: JwtAlgorithm
 	key: string | Buffer
@@ -59,19 +59,29 @@ interface JwtPayloadBase {
 	scope?: string
 	iat?: number
 }
-interface DecodedJwtClaims {
+interface JwtDecodedClaims {
 	iss?: string
 	aud?: string | string[]
 	[key: string]: unknown
 }
-const SUPPORTED_ALGORITHMS: JwtAlgorithm[] = ['HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512']
-const DEFAULT_CLOCK_TOLERANCE = 5
-function assertAlgorithm(alg: string): asserts alg is JwtAlgorithm {
-	if (!SUPPORTED_ALGORITHMS.includes(alg as JwtAlgorithm)) {
+const JWT_SUPPORTED_ALGORITHMS: JwtAlgorithm[] = [
+	'HS256',
+	'HS384',
+	'HS512',
+	'RS256',
+	'RS384',
+	'RS512',
+]
+const JWT_DEFAULT_CLOCK_TOLERANCE = 5
+const JWT_GENERATION_MIN_COUNT = 1
+const JWT_GENERATION_MAX_COUNT = 100
+const JWT_DEFAULT_EXPIRES_IN = 3600
+function jwtAssertAlgorithm(alg: string): asserts alg is JwtAlgorithm {
+	if (!JWT_SUPPORTED_ALGORITHMS.includes(alg as JwtAlgorithm)) {
 		throw new ValidationError(`Unsupported algorithm: ${alg}`, { alg })
 	}
 }
-function validateKeyForAlgorithm(
+function jwtValidateKeyForAlgorithm(
 	algorithm: JwtAlgorithm,
 	key: unknown,
 	operation: 'sign' | 'verify',
@@ -99,7 +109,7 @@ function validateKeyForAlgorithm(
 		}
 	}
 }
-function buildSignOptions(config: JwtSignConfig): SignOptions {
+function jwtBuildSignOptions(config: JwtSignConfig): SignOptions {
 	const options: SignOptions = {
 		algorithm: config.algorithm as Algorithm,
 	}
@@ -110,17 +120,17 @@ function buildSignOptions(config: JwtSignConfig): SignOptions {
 	if (config.notBefore !== undefined) options.notBefore = config.notBefore
 	return options
 }
-function buildVerifyOptions(config: JwtVerifyConfig): VerifyOptions {
+function jwtBuildVerifyOptions(config: JwtVerifyConfig): VerifyOptions {
 	const options: VerifyOptions = {
 		algorithms: [config.algorithm as Algorithm],
-		clockTolerance: config.clockTolerance ?? DEFAULT_CLOCK_TOLERANCE,
+		clockTolerance: config.clockTolerance ?? JWT_DEFAULT_CLOCK_TOLERANCE,
 	}
 	if (config.issuer !== undefined) options.issuer = config.issuer
 	if (config.audience !== undefined) options.audience = config.audience
 	if (config.maxAge !== undefined) options.maxAge = config.maxAge
 	return options
 }
-function enforceStrictClaims(decoded: DecodedJwtClaims, config: JwtVerifyConfig): void {
+function jwtEnforceStrictClaims(decoded: JwtDecodedClaims, config: JwtVerifyConfig): void {
 	const requireIssuer = config.requireIssuer !== false
 	const requireAudience = config.requireAudience !== false
 	if (requireIssuer) {
@@ -147,7 +157,7 @@ function enforceStrictClaims(decoded: DecodedJwtClaims, config: JwtVerifyConfig)
 		}
 	}
 }
-function shuffle<T>(array: T[]): T[] {
+function jwtShuffle<T>(array: T[]): T[] {
 	const result = [...array]
 	for (let i = result.length - 1; i > 0; i--) {
 		const j = Math.floor(Math.random() * (i + 1))
@@ -155,24 +165,69 @@ function shuffle<T>(array: T[]): T[] {
 	}
 	return result
 }
-export function signJwt<T extends object = any>(payload: T, config: JwtSignConfig): string {
-	assertAlgorithm(config.algorithm)
-	validateKeyForAlgorithm(config.algorithm, config.key, 'sign')
-	const options = buildSignOptions(config)
+function jwtResolveGenerateOptions(options: JwtGenerateOptions): Required<JwtGenerateOptions> {
+	if (!options?.key) {
+		throw new ValidationError('Key is required for token generation')
+	}
+	const count = options.count ?? JWT_GENERATION_MIN_COUNT
+	if (count < JWT_GENERATION_MIN_COUNT || count > JWT_GENERATION_MAX_COUNT) {
+		throw new ValidationError(
+			`count must be between ${JWT_GENERATION_MIN_COUNT} and ${JWT_GENERATION_MAX_COUNT}`,
+			{ count },
+		)
+	}
+	const algorithm = options.algorithm ?? 'HS256'
+	jwtAssertAlgorithm(algorithm)
+	return {
+		key: options.key,
+		count,
+		algorithm,
+		expiresIn: options.expiresIn ?? JWT_DEFAULT_EXPIRES_IN,
+		includeRoles: options.includeRoles ?? false,
+		includeScope: options.includeScope ?? false,
+		issuer: options.issuer ?? '',
+		audience: options.audience ?? '',
+	}
+}
+function jwtGenerateSingleToken(
+	config: Required<JwtGenerateOptions>,
+	now: number,
+): JwtGeneratedToken {
+	const payload = jwtGeneratePayload({
+		includeRoles: config.includeRoles,
+		includeScope: config.includeScope,
+	})
+	payload.iat = now
+	const token = jwtSign(payload, {
+		algorithm: config.algorithm,
+		key: config.key,
+		issuer: config.issuer,
+		audience: config.audience,
+		expiresIn: config.expiresIn,
+	})
+	return { token, payload }
+}
+function jwtGetUnixTimestamp(): number {
+	return Math.floor(Date.now() / 1000)
+}
+export function jwtSign<T extends object = any>(payload: T, config: JwtSignConfig): string {
+	jwtAssertAlgorithm(config.algorithm)
+	jwtValidateKeyForAlgorithm(config.algorithm, config.key, 'sign')
+	const options = jwtBuildSignOptions(config)
 	try {
 		return jwt.sign(payload, config.key, options)
 	} catch (err: any) {
 		throw new CryptoError('JWT signing failed', { algorithm: config.algorithm }, err)
 	}
 }
-export function verifyJwt<T extends object = any>(
+export function jwtVerify<T extends object = any>(
 	token: string,
 	config: JwtVerifyConfig,
 	validate?: (payload: unknown) => T,
 ): T {
-	assertAlgorithm(config.algorithm)
-	validateKeyForAlgorithm(config.algorithm, config.key, 'verify')
-	const options = buildVerifyOptions(config)
+	jwtAssertAlgorithm(config.algorithm)
+	jwtValidateKeyForAlgorithm(config.algorithm, config.key, 'verify')
+	const options = jwtBuildVerifyOptions(config)
 	let decoded: unknown
 	try {
 		decoded = jwt.verify(token, config.key, options)
@@ -182,16 +237,16 @@ export function verifyJwt<T extends object = any>(
 	if (typeof decoded !== 'object' || decoded === null) {
 		throw new CryptoError('Invalid JWT payload: not an object')
 	}
-	enforceStrictClaims(decoded as Record<string, unknown>, config)
+	jwtEnforceStrictClaims(decoded as JwtDecodedClaims, config)
 	if (validate) {
 		return validate(decoded)
 	}
 	return decoded as T
 }
-export function decodeJwt<T = any>(token: string): T | null {
+export function jwtDecode<T = any>(token: string): T | null {
 	return jwt.decode(token) as T | null
 }
-export function generateJwtPayload(
+export function jwtGeneratePayload(
 	options: JwtPayloadOptions = {},
 ): JwtPayloadBase & Record<string, any> {
 	const payload: JwtPayloadBase = {
@@ -201,60 +256,21 @@ export function generateJwtPayload(
 	if (options.includeRoles) {
 		const rolesPool = ['admin', 'user', 'editor', 'viewer']
 		const count = randomInt(1, 4)
-		const shuffled = shuffle(rolesPool)
+		const shuffled = jwtShuffle(rolesPool)
 		payload.roles = shuffled.slice(0, count)
 	}
 	if (options.includeScope) {
 		const scopesPool = ['read', 'write', 'delete', 'update']
 		const count = randomInt(1, 4)
-		const shuffled = shuffle(scopesPool)
+		const shuffled = jwtShuffle(scopesPool)
 		payload.scope = shuffled.slice(0, count).join(' ')
 	}
 	return payload
 }
-function resolveGenerateOptions(options: JwtGenerateOptions): Required<JwtGenerateOptions> {
-	if (!options?.key) {
-		throw new ValidationError('Key is required for token generation')
-	}
-	const count = options.count ?? 1
-	if (count < 1 || count > 100) {
-		throw new ValidationError('count must be between 1 and 100', { count })
-	}
-	const algorithm = options.algorithm ?? 'HS256'
-	assertAlgorithm(algorithm)
-	return {
-		key: options.key,
-		count,
-		algorithm,
-		expiresIn: options.expiresIn ?? 3600,
-		includeRoles: options.includeRoles ?? false,
-		includeScope: options.includeScope ?? false,
-		issuer: options.issuer ?? '',
-		audience: options.audience ?? '',
-	}
-}
-function generateSingleToken(config: Required<JwtGenerateOptions>, now: number): JwtGeneratedToken {
-	const payload = generateJwtPayload({
-		includeRoles: config.includeRoles,
-		includeScope: config.includeScope,
-	})
-	payload.iat = now
-	const token = signJwt(payload, {
-		algorithm: config.algorithm,
-		key: config.key,
-		issuer: config.issuer,
-		audience: config.audience,
-		expiresIn: config.expiresIn,
-	})
-	return { token, payload }
-}
-function getUnixTimestamp(): number {
-	return Math.floor(Date.now() / 1000)
-}
-export function generateJwtTokens(options: JwtGenerateOptions): JwtGenerateResult {
-	const config = resolveGenerateOptions(options)
-	const now = getUnixTimestamp()
-	const tokens = Array.from({ length: config.count }, () => generateSingleToken(config, now))
+export function jwtGenerateTokens(options: JwtGenerateOptions): JwtGenerateResult {
+	const config = jwtResolveGenerateOptions(options)
+	const now = jwtGetUnixTimestamp()
+	const tokens = Array.from({ length: config.count }, () => jwtGenerateSingleToken(config, now))
 	return {
 		tokens,
 		metadata: {
@@ -266,7 +282,7 @@ export function generateJwtTokens(options: JwtGenerateOptions): JwtGenerateResul
 		},
 	}
 }
-export function exportJwtTokens(
+export function jwtExportTokens(
 	result: JwtGenerateResult,
 	format: 'json' | 'csv' | 'txt' = 'json',
 ): string {
