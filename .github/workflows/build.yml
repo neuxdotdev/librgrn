@@ -27,7 +27,7 @@ jobs:
             ~/.cargo/git
           key: '${{ runner.os }}-cargo-${{ hashFiles(''**/Cargo.lock'') }}'
       - name: Install rmcm
-        run: 'cargo install --git https://github.com/neuxdotdev/comment-remover rmcm'
+        run: 'cargo install --git https://github.com/neuxdotdev/comment-remover.git'
       - name: Add Cargo bin to PATH
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
       - name: Run rebuild
