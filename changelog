@@ -91,3 +91,5 @@
 * [2d2f4e4] 2026-03-05 | neuxdotdev | feat(security): overhaul JWT generator with entropy validation & presets
 * [1c7c376] 2026-03-05 | neuxdotdev | feat(security): enhance OAuth token generation with validation & presets
 * [67b67e8] 2026-03-05 | neuxdotdev | feat(security): upgrade Webhook secret generator with HMAC verification
+* [ada100c] 2026-03-04 | CI Bot | Update changelog [2026-03-04 17:27:43]
+* [d018c19] 2026-03-05 | neuxdotdev | refactor(security): remove similar chars constant after security audit
