@@ -235,9 +235,6 @@ export function apiTokenGeneratorGenerateSample(): ApiTokenGeneratorItem {
 	})
 	return result.tokens[0]!
 }
-// ============================================================================
-// Kelas dengan method yang juga diperpanjang
-// ============================================================================
 export class ApiTokenGeneratorGenerator {
 	private options: ReturnType<typeof apiTokenGeneratorValidateOptions>
 	constructor(options: ApiTokenGeneratorGenerateOptions = {}) {
