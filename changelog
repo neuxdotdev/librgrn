@@ -117,3 +117,5 @@
 * [7664f62] 2026-03-12 | neuxdotdev | chore(deps): bump actions/upload-artifact from 4 to 7 (#3)
 * [0293b2b] 2026-03-12 | CI Bot | Update changelog [2026-03-12 07:43:35]
 * [76fdac4] 2026-03-13 | neuxdotdev | Revise installation instructions in readme
+* [48dc1d7] 2026-03-13 | CI Bot | Update changelog [2026-03-13 03:10:11]
+* [171e64a] 2026-03-13 | neuxdotdev | docs: Update readme with contact and support details
