@@ -38,13 +38,18 @@ TypeScript (recommended for development because the library is written in TypeSc
 
 INSTALLATION
 To install this library via npm, run the following command in your project's terminal:
-npm install librgrn
+
+$ npm install librgrn
 
 If you want to contribute or develop from source, clone the repository and run:
-git clone https://github.com/neuxdotdev/librgrn.git
-cd librgrn
-npm install
-npm run build
+
+$ git clone https://github.com/neuxdotdev/librgrn.git
+
+$ cd librgrn
+
+$ npm install
+
+$ npm run build
 
 HOW TO USE
 This library uses ES6 modules. Make sure your project supports the module type or use standard imports. Here are examples of how to use some of its key features.
